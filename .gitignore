@@ -1,0 +1,19 @@
+# --- Python ---
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual Environments
+venv/
+.venv/
+env/
+
+# --- Mac OS (Important for you) ---
+.DS_Store
+
+# --- IDEs (Optional but recommended) ---
+.vscode/
+.idea/
+
+# --- Environment Variables (Security) ---
+.env
