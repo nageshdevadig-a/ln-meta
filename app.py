@@ -24,10 +24,10 @@ model = load_model()
 # --- SIDEBAR ---
 st.sidebar.header("Settings")
 alpha_val = st.sidebar.slider("Heatmap Intensity", 0.0, 1.0, 0.4)
-st.sidebar.info("Model: MobileNetV2-UNet\nInput: 224x224 (Upsampled)")
+st.sidebar.info("Model: MobileNet-UNet\nInput: 224x224 ")
 
 # --- MAIN UI ---
-st.title("🔬 Camelyon16: Patch-Based Tumor Analysis")
+st.title(" Camelyon Patch-Based Lymph Node metastases Analysis")
 st.write("Upload a 4x4 Grid Image (Total size 384x384 pixels).")
 
 uploaded_file = st.file_uploader("Choose a Grid PNG...", type=["png"])
@@ -54,11 +54,24 @@ if uploaded_file and model:
         with col_g1:
             st.image(grid_img, caption="Original Tissue Grid", use_container_width=True)
         with col_g2:
-            st.image(global_overlay, caption="Global AI Overlay", use_container_width=True)
+            st.image(global_overlay, caption="Global heatmap Overlay", use_container_width=True)
 
     with tab2:
         st.subheader("Local Patch Deep Dive")
-        st.write("Original Tissue ➡️ Probability Heatmap ➡️ Blended Overlay")
+
+        col1, col2, col3 = st.columns(3)  # equal width columns
+
+        with col1:
+            st.markdown("**Original Tissue**")
+     
+
+        with col2:
+            st.markdown("**Probability Heatmap**")
+       
+
+        with col3:
+            st.markdown("**Blended Overlay**")
+           
 
         # Loop through all 16 patches
         for i in range(16):
@@ -66,7 +79,7 @@ if uploaded_file and model:
                 c1, c2, c3 = st.columns(3)
 
                 c1.image(patches[i], caption="Raw Patch (96x96)", use_container_width=True)
-                c2.image(heatmaps[i], caption="Tumor Probability", use_container_width=True)
+                c2.image(heatmaps[i], caption="Tumor Probability mask", use_container_width=True)
                 c3.image(overlays[i], caption="Resulting Overlay", use_container_width=True)
 
 else:
