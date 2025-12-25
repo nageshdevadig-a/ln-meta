@@ -2,14 +2,16 @@ import streamlit as st
 import numpy as np
 import cv2
 from PIL import Image
-from src.model_arch import MobileNetUNet
 from src.processor import process_grid_image, stitch_grid
+
+
 
 # Page Config
 st.set_page_config(layout="wide", page_title="Camelyon16 Pathology AI")
 
 
 # --- MODEL LOADING ---
+from src.model_arch import MobileNetUNet
 @st.cache_resource
 def load_model():
     # Ensure your .ckpt file is in the checkpoints folder
@@ -17,6 +19,16 @@ def load_model():
     model = MobileNetUNet.load_from_checkpoint(path, map_location='cpu')
     model.eval()
     return model
+
+
+#from src.model_arch import ResNetUNet
+# @st.cache_resource
+# def load_model():
+#     path = "checkpoints/best_standard_unet.ckpt"
+#     model = ResNetUNet.load_from_checkpoint(path, map_location="cpu")
+#     model.eval()
+#     return model
+
 
 
 model = load_model()
@@ -46,7 +58,7 @@ if uploaded_file and model:
         global_overlay = stitch_grid(overlays)
 
     # 3. Display Results in Tabs
-    tab1, tab2 = st.tabs(["🌐 Global Overview", "🔍 Individual Patch Analysis"])
+    tab1, tab2 = st.tabs(["Global Overview", "Individual Patch Analysis"])
 
     with tab1:
         st.subheader("Global Clinical Mapping")
