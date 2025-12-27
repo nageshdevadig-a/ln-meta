@@ -134,11 +134,11 @@ if uploaded_file and model:
                     dice_score = calculate_dice(heatmaps[i], gt_masks[i])
 
                     color = "green" if dice_score > 0.75 else "orange" if dice_score > 0.3 else "red"
-                    status = "✅ Match" if dice_score > 0.75 else "⚠️ Partial" if dice_score > 0.3 else "❌ Mismatch"
+                    # status = "✅ Match" if dice_score > 0.75 else "⚠️ Partial" if dice_score > 0.3 else "❌ Mismatch"
 
                     cols[3].markdown(f"**Dice:** <span style='color:{color}'>{dice_score:.4f}</span>",
                                      unsafe_allow_html=True)
-                    cols[3].write(f"Status: {status}")
+                    # cols[3].write(f"Status: {status}")
                 else:
                     cols[2].image(overlays[i], use_container_width=True)
 
