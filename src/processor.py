@@ -53,3 +53,72 @@ def stitch_grid(patch_list):
     """Combines 16 patches into a single 4x4 image."""
     rows = [np.hstack(patch_list[i:i + 4]) for i in range(0, 16, 4)]
     return np.vstack(rows)
+
+
+def slice_mask_grid(mask_grid_img):
+    if len(mask_grid_img.shape) == 3:
+        mask_grid_img = cv2.cvtColor(mask_grid_img, cv2.COLOR_RGB2GRAY)
+    _, binary_grid = cv2.threshold(mask_grid_img, 127, 255, cv2.THRESH_BINARY)
+
+    masks = []
+    ps = 96
+    for r in range(4):
+        for c in range(4):
+            masks.append(binary_grid[r * ps:(r + 1) * ps, c * ps:(c + 1) * ps])
+    return masks
+
+
+def calculate_dice(pred_binary, gt_mask):
+    """
+    Calculates Dice Score between two 2D binary masks.
+    pred_binary: 2D array (0 or 255)
+    gt_mask: 2D array (0 or 255)
+    """
+    # Ensure they are 2D (remove channel dimension if accidentally passed)
+    if len(pred_binary.shape) == 3:
+        pred_binary = pred_binary[:, :, 0]
+    if len(gt_mask.shape) == 3:
+        gt_mask = cv2.cvtColor(gt_mask, cv2.COLOR_RGB2GRAY)
+
+    # Convert to 0/1 for math
+    p = (pred_binary > 127).astype(np.float32)
+    g = (gt_mask > 127).astype(np.float32)
+
+    intersection = np.sum(p * g)
+    total_area = np.sum(p) + np.sum(g)
+
+    if total_area == 0:
+        return 1.0  # Perfect match for two empty (normal) patches
+
+    return (2. * intersection) / (total_area + 1e-8)
+
+def get_tumor_percentage(mask):
+    """Calculates the percentage of area covered by tumor cells."""
+    tumor_pixels = np.sum(mask > 127)
+    total_pixels = mask.size
+    return (tumor_pixels / total_pixels) * 100
+
+
+def get_binary_mask(heatmap_rgb):
+    """
+    Ensures Red (Tumor) becomes White (255)
+    and Blue (Normal) becomes Black (0).
+    """
+    # In JET colormap, Red has high values in the Red channel
+    # and Blue has low values in the Red channel.
+    r_channel = heatmap_rgb[:, :, 0]
+
+    # Thresholding: If red intensity is high (>127), it's Tumor (White)
+    _, binary = cv2.threshold(r_channel, 127, 255, cv2.THRESH_BINARY)
+    return binary
+
+def get_gt_boundary_overlay(tissue_patch, gt_mask):
+    """
+    Draws a green boundary of the Ground Truth onto the tissue.
+    """
+    overlay = tissue_patch.copy()
+    # Find edges in the ground truth mask
+    contours, _ = cv2.findContours(gt_mask.astype(np.uint8), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+    # Draw contours in Green (0, 255, 0) with thickness 2
+    cv2.drawContours(overlay, contours, -1, (0, 255, 0), 2)
+    return overlay
